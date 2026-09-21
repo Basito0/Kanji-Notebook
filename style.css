@@ -1,0 +1,50 @@
+:root {
+    --bg-primary: #16001c;
+    --card-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+    --accent-color: #16001c;
+    --border-radius: 8px;
+    --font-color: white;
+}
+
+body {
+    background-color: var(--bg-primary);
+    color: var(--text-color);
+    font-family: sans-serif;
+    margin: 20px;
+}
+
+.kanji-card {
+    background-color: var(--card-bg);
+    border-radius: var(--border-radius);
+    box-shadow: var(--shadow);
+    padding: 15px;
+    margin-bottom: 10px;
+}
+
+input {
+    padding: 8px 12px;
+    border-radius: var(--border-radius);
+    border: 1px solid #ccc;
+    font-family: sans-serif;
+}
+
+button {
+    background-color: var(--accent-color);
+    color: white;
+    border: 2px solid #7f199c; 
+    padding: 8px 16px;
+    border-radius: var(--border-radius);
+    cursor: pointer;
+}
+
+a {
+    color: var(--font-color);
+}
+
+p {
+    color: var(--font-color);
+}
+
+h1, h2, h3, h4 {
+    color: var(--font-color);
+}

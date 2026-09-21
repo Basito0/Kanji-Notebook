@@ -1,0 +1,37 @@
+<html>
+
+<style>
+
+    .hidden {
+        display: none;
+    }
+
+    #images-mangas {
+        display: flex;
+        gap: 15px;
+    }
+
+    #btn-toggle-form{
+        margin-top: 15px;
+    }
+
+</style>
+<head>
+    <meta charset="UTF-8"> 
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <link rel="stylesheet" href="./style.css">
+    <title>Mi Aplicación de Manga</title>
+</head>
+
+<body>
+    <div id="images-mangas"></div>
+    <button id="btn-toggle-form">Add manga</button>
+    <form id="manga-form" class="hidden">
+        <h3>Add New Entry</h3>
+        <input type="text" id="frm-new-manga" placeholder="Manga Title" required />
+        <button type="submit" id="btn-save">Save</button>
+    </form>
+</body>
+
+<script src="./mangalist.js"></script>
+</html>

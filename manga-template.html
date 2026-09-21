@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<style>
+
+    .hidden {
+        display: none;
+    }
+
+    .dropdown-content {
+        display: none;
+        background-color: #16001c;
+    }
+
+    .dropdown-content.show {
+        display: block;
+    }
+
+    .editable-note{
+        color: white;
+    }
+
+    #btn-add-kanji{
+        margin: 3px;
+    }
+    
+    #frm-new-kanji{
+        margin-left: 3px;
+    }
+
+    .row {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        border-radius: 10px;
+        border-color: antiquewhite;
+        border-style: solid;
+        border-width: 1px;
+        margin: 6px;
+        padding: 5px;
+        max-width: 100%;
+    }
+    
+    .row p {
+        margin: 6px;
+        white-space: normal;
+        word-break: break-word;
+        overflow: visible;
+        display: block;
+        flex: 1;
+    }
+    
+
+    .column {
+        display: flex;
+        align-items: start;
+        gap: 10px;
+        margin: 6px;
+        padding-left: 10px;
+        max-width: 100%;
+    }
+
+</style>
+
+<head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="./style.css">
+    <title>{{TITLE}}</title>
+</head>
+<body> 
+    <button onclick="window.myStorageAPI.goHome()">Go back to Home</button>
+    <h1 id="manga-title">Loading...</h1>
+    <h3 id="date-added">Loading date...</h3>
+    <button id="btn-add-kanji">Add Kanji</button>
+    <div id="div-add-kanji" class="hidden">
+        <form id="kanji-form">
+            <input type="text" id="frm-new-kanji" placeholder="Write a Kanji" required />
+            <button type="submit" id="btn-save-kanji">Save</button>
+        </form>
+    </div>
+    <div id="list-kanji">
+
+    </div>
+</body>
+
+<script src="./manga-view.js"></script>
+</html>
