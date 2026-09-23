@@ -16,6 +16,7 @@ steps:
   displayName: 'Install Node.js'
 
 - script: |
+    rm -rf package-lock.json
     npm install
     npm run make
   displayName: 'npm install and build'
