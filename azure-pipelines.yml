@@ -1,22 +1,77 @@
-# Node.js
-# Build a general Node.js project with npm.
-# Add steps that analyze code, save build artifacts, deploy, and more:
-# https://docs.microsoft.com/azure/devops/pipelines/languages/javascript
-
 trigger:
 - main
 
-pool:
-  vmImage: ubuntu-latest
+jobs:
+# --- PHASE 1: BUILD THE APPLICATION ---
+- job: BuildApp
+  strategy:
+    matrix:
+      windows:
+        imageName: 'windows-latest'
+        scriptRun: |
+          npm install
+          if (Test-Path "node_modules\electron-winstaller\vendor\7z_x64.dll") { Rename-Item -Path "node_modules\electron-winstaller\vendor\7z_x64.dll" -NewName "7z.dll" -Force }
+          if (Test-Path "node_modules\electron-winstaller\vendor\7z_x64.exe") { Rename-Item -Path "node_modules\electron-winstaller\vendor\7z_x64.exe" -NewName "7z.exe" -Force }
+          if (Test-Path "package-lock.json") { Remove-Item -Path "package-lock.json" -Force }
+          npm run make
+      linux:
+        imageName: 'ubuntu-latest'
+        scriptRun: |
+          npm install
+          rm -f package-lock.json
+          npm run make
+    maxParallel: 1
 
-steps:
-- task: UseNode@1
-  inputs:
-    version: '20.x'
-  displayName: 'Install Node.js'
+  pool:
+    vmImage: $(imageName)
 
-- script: |
-    rm -rf package-lock.json
-    npm install
-    npm run make
-  displayName: 'npm install and build'
+  steps:
+  - task: UseNode@1
+    inputs:
+      version: '20.x'
+    displayName: 'Install Node.js'
+
+  - script: $(scriptRun)
+    displayName: 'npm install and build'
+
+  # Stash the entire 'out/make' directory
+  - task: PublishPipelineArtifact@1
+    inputs:
+      targetPath: '$(System.DefaultWorkingDirectory)/out/make'
+      artifact: 'build-output-$(Agent.JobName)'
+    displayName: 'Upload binaries to pipeline storage'
+
+
+# --- PHASE 2: PUBLISH TO GITHUB ---
+- job: PublishToGitHub
+  dependsOn: BuildApp
+  condition: succeeded()
+  pool:
+    vmImage: 'ubuntu-latest'
+
+  steps:
+  - task: DownloadPipelineArtifact@2
+    inputs:
+      path: '$(Pipeline.Workspace)/artifacts'
+
+  # Create the GitHub Release and filter specific contents
+  - task: GitHubRelease@1
+    inputs:
+      gitHubConnection: 'Basito0'
+      repositoryName: '$(Build.Repository.Name)'
+      action: 'create'
+      target: '$(Build.SourceVersion)'
+      tagSource: 'userSpecifiedTag'
+      tag: 'v$(Build.BuildId)'
+      title: 'Release v$(Build.BuildId)'
+      changeLogCompareToRelease: 'lastFullRelease'
+      changeLogType: 'commitBased'
+      
+      # Visual Matchers:
+      # Line 1: Grab all contents inside deb/x64, rpm/x64, and zip/linux/x64
+      # Line 2: Explicitly grab ONLY the .exe files from squirrel.windows/x64
+      assets: |
+        $(Pipeline.Workspace)/artifacts/**/@(deb|rpm)/x64/*
+        $(Pipeline.Workspace)/artifacts/**/zip/linux/x64/*
+        $(Pipeline.Workspace)/artifacts/**/squirrel.windows/x64/*.exe
+    displayName: 'Filter assets and upload to GitHub Release'
