@@ -11,6 +11,8 @@ let activeMangaTitle = "";
 
 let win = null;
 
+if (require('electron-squirrel-startup')) app.quit();
+
 const createWindow = () => {
   win = new BrowserWindow({
     width: 800,
