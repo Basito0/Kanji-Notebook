@@ -8,54 +8,36 @@ jobs:
     matrix:
       windows:
         imageName: 'windows-latest'
-        # Split into a list of commands natively supported by PowerShell Core (pwsh)
         scriptRun: |
           npm install
           if (Test-Path "node_modules\electron-winstaller\vendor\7z_x64.dll") { Rename-Item -Path "node_modules\electron-winstaller\vendor\7z_x64.dll" -NewName "7z.dll" -Force }
           if (Test-Path "node_modules\electron-winstaller\vendor\7z_x64.exe") { Rename-Item -Path "node_modules\electron-winstaller\vendor\7z_x64.exe" -NewName "7z.exe" -Force }
           if (Test-Path "package-lock.json") { Remove-Item -Path "package-lock.json" -Force }
           npm run make
-          Get-ChildItem -Recurse
-        isWindows: true
       linux:
         imageName: 'ubuntu-latest'
         scriptRun: |
           npm install
           rm -f package-lock.json
-          npm run make
-        isWindows: false
+          npm run make -- --skip-signing
     maxParallel: 1
 
   pool:
     vmImage: $(imageName)
 
   steps:
-  # Upgraded to 22.x to safely meet the required engine demands of Electron v44
   - task: UseNode@1
     inputs:
-      version: '22.x'
+      version: '20.x'
     displayName: 'Install Node.js'
 
-  # Conditional Step: Runs on Windows using PowerShell Core
-  - task: PowerShell@2
-    inputs:
-      targetType: 'inline'
-      script: $(scriptRun)
-    displayName: 'npm install and build (Windows)'
-    condition: eq(variables['isWindows'], 'true')
+  - script: $(scriptRun)
+    displayName: 'npm install and build'
 
-  # Conditional Step: Runs on Linux using Bash
-  - task: Bash@3
-    inputs:
-      targetType: 'inline'
-      script: $(scriptRun)
-    displayName: 'npm install and build (Linux)'
-    condition: ne(variables['isWindows'], 'false')
-
-  # Stash the entire directory using wildcards to handle varying output paths
+  # Stash the entire 'out/make' directory
   - task: PublishPipelineArtifact@1
     inputs:
-      targetPath: '$(System.DefaultWorkingDirectory)/out'
+      targetPath: '$(System.DefaultWorkingDirectory)/out/make'
       artifact: 'build-output-$(Agent.JobName)'
     displayName: 'Upload binaries to pipeline storage'
 
@@ -72,6 +54,7 @@ jobs:
     inputs:
       path: '$(Pipeline.Workspace)/artifacts'
 
+
   # Create the GitHub Release and filter specific contents
   - task: GitHubRelease@1
     inputs:
@@ -85,9 +68,11 @@ jobs:
       changeLogCompareToRelease: 'lastFullRelease'
       changeLogType: 'commitBased'
       
-      # Adjusted the pattern to match files since we captured $(System.DefaultWorkingDirectory)/out
+      # Visual Matchers:
+      # Line 1: Grab all contents inside deb/x64, rpm/x64, and zip/linux/x64
+      # Line 2: Explicitly grab ONLY the .exe files from squirrel.windows/x64
       assets: |
-        $(Pipeline.Workspace)/artifacts/**/make/@(deb|rpm)/x64/*
-        $(Pipeline.Workspace)/artifacts/**/make/zip/linux/x64/*
-        $(Pipeline.Workspace)/artifacts/**/make/squirrel.windows/x64/*.exe
+        $(Pipeline.Workspace)/artifacts/**/@(deb|rpm)/x64/*
+        $(Pipeline.Workspace)/artifacts/**/zip/linux/x64/*
+        $(Pipeline.Workspace)/artifacts/**/squirrel.windows/x64/*.exe
     displayName: 'Filter assets and upload to GitHub Release'
