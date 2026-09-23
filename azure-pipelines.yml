@@ -13,13 +13,13 @@ jobs:
           if (Test-Path "node_modules\electron-winstaller\vendor\7z_x64.dll") { Rename-Item -Path "node_modules\electron-winstaller\vendor\7z_x64.dll" -NewName "7z.dll" -Force }
           if (Test-Path "node_modules\electron-winstaller\vendor\7z_x64.exe") { Rename-Item -Path "node_modules\electron-winstaller\vendor\7z_x64.exe" -NewName "7z.exe" -Force }
           if (Test-Path "package-lock.json") { Remove-Item -Path "package-lock.json" -Force }
-          npm run make
+          npm run make -- --skip-signing
       linux:
         imageName: 'ubuntu-latest'
         scriptRun: |
           npm install
           rm -f package-lock.json
-          npm run make -- --skip-signing
+          npm run make
     maxParallel: 1
 
   pool:
