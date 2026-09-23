@@ -20,38 +20,6 @@
     "@electron-forge/maker-zip": "^6.4.2",
     "electron": "^44.4.3"
   },
-  "config": {
-    "forge": {
-      "packagerConfig": {},
-      "makers": [
-        {
-          "name": "@electron-forge/maker-squirrel",
-          "config": {
-            "name": "electron_quick_start",
-            "certificateFile": "'./cert.pfx'",
-            "certificatePassword": "process.env.CERTIFICATE_PASSWORD"
-          }
-        },
-        {
-          "name": "@electron-forge/maker-zip",
-          "platforms": [
-            "darwin",
-            "linux"
-          ]
-        },
-        {
-          "name": "@electron-forge/maker-deb",
-          "platforms": ["linux"],
-          "config": {}
-        },
-        {
-          "name": "@electron-forge/maker-rpm",
-          "platforms": ["linux"],
-          "config": {}
-        }
-      ]
-    }
-  },
   "dependencies": {
     "electron-squirrel-startup": "^1.0.1"
   }
