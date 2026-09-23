@@ -8,6 +8,7 @@ jobs:
     matrix:
       windows:
         imageName: 'windows-latest'
+        isWindows: 'true'
         scriptRun: |
           npm install
           if (Test-Path "node_modules\electron-winstaller\vendor\7z_x64.dll") { Rename-Item -Path "node_modules\electron-winstaller\vendor\7z_x64.dll" -NewName "7z.dll" -Force }
@@ -16,6 +17,7 @@ jobs:
           npm run make -- --skip-signing
       linux:
         imageName: 'ubuntu-latest'
+        isWindows: 'false'
         scriptRun: |
           npm install
           rm -f package-lock.json
@@ -26,13 +28,28 @@ jobs:
     vmImage: $(imageName)
 
   steps:
+  # Upgraded to 22.x to properly align with your Electron framework engine requirements
   - task: UseNode@1
     inputs:
-      version: '20.x'
+      version: '22.x'
     displayName: 'Install Node.js'
 
-  - script: $(scriptRun)
-    displayName: 'npm install and build'
+  # Run on Windows agents using PowerShell Core (handles multiline variables safely)
+  - task: PowerShell@2
+    inputs:
+      targetType: 'inline'
+      script: $(scriptRun)
+      pwsh: true
+    displayName: 'npm install and build (Windows)'
+    condition: eq(variables['isWindows'], 'true')
+
+  # Run on Linux agents using Bash
+  - task: Bash@3
+    inputs:
+      targetType: 'inline'
+      script: $(scriptRun)
+    displayName: 'npm install and build (Linux)'
+    condition: eq(variables['isWindows'], 'false')
 
   # Stash the entire 'out/make' directory
   - task: PublishPipelineArtifact@1
@@ -53,7 +70,6 @@ jobs:
   - task: DownloadPipelineArtifact@2
     inputs:
       path: '$(Pipeline.Workspace)/artifacts'
-
 
   # Create the GitHub Release and filter specific contents
   - task: GitHubRelease@1
