@@ -1,9 +1,63 @@
 const addKanjiBtn = document.getElementById('btn-add-kanji');
 const addKanjiDiv = document.getElementById('div-add-kanji');
+const exportKanjiBtn = document.getElementById('btn-export-anki');
 const saveKanjiButton = document.getElementById('btn-save-kanji');
 const saveKanjiForm = document.getElementById('frm-new-kanji');
 const kanjiForm = document.getElementById('kanji-form');
 const kanjiList = document.getElementById('list-kanji');
+
+function showToast(message, type = 'success') {
+    // 1. Create the toast element
+    const toast = document.createElement('div');
+    toast.className = `toast-notification ${type}`;
+    toast.innerText = message;
+
+    // 2. Append it to the body
+    document.body.appendChild(toast);
+
+    // 3. Trigger the animation via a tiny timeout (allows DOM to register the element)
+    setTimeout(() => {
+        toast.classList.add('show');
+    }, 10);
+
+    // 4. Slide out and remove the element after 3 seconds
+    setTimeout(() => {
+        toast.classList.remove('show');
+        
+        // Wait for the transition animation to finish before removing from DOM
+        toast.addEventListener('transitionend', () => {
+            toast.remove();
+        });
+    }, 3000);
+}
+
+
+exportKanjiBtn.addEventListener('click', async () => {
+    console.log("Export kanji button was clicked!");
+    
+    // Optional: Disable button to prevent double-clicks while exporting
+    exportKanjiBtn.disabled = true;
+
+    try {
+        const title = await window.myStorageAPI.getActiveManga();
+        const mangaInfo = await window.myStorageAPI.getMangaInfo(title);
+
+        // Capture the object returned by your ipcMain.handle
+        const result = await window.myStorageAPI.exportToCSV(title, mangaInfo.kanjisUsed);
+
+        if (result && result.success) {
+            showToast('Your CSV file was succesfully saved in ' + result.path , 'success');
+        } else {
+            showToast(`Export failed: ${result?.error || 'Unknown error'}`, 'error');
+        }
+    } catch (err) {
+        showToast(`An unexpected error occurred: ${err.message}`, 'error');
+    } finally {
+        // Re-enable the button regardless of success or failure
+        exportKanjiBtn.disabled = false;
+    }
+});
+
 
 addKanjiBtn.addEventListener('click', () => {
     console.log("Add Kanji button was clicked!");

@@ -18,4 +18,5 @@ contextBridge.exposeInMainWorld('myStorageAPI', {
   getMangaInfo: (mangaTitle) => ipcRenderer.invoke('get-manga-info', mangaTitle),
   getActiveManga: () => ipcRenderer.invoke('get-active-manga'),
   saveMangaInfo: (mangaName, dataToSave) => ipcRenderer.invoke('save-manga-info', mangaName, dataToSave),
+  exportToCSV: (mangaName, data) => ipcRenderer.invoke('export-to-csv', mangaName, data),
 })
